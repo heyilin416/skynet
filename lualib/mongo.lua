@@ -356,17 +356,38 @@ function mongo_collection:batch_insert(docs)
 	sock:request(pack)
 end
 
-function mongo_collection:update(selector,update,upsert,multi)
+function mongo_collection:safe_batch_insert(docs)
+	for	i=1,#docs do
+		if docs[i]._id == nil then
+			docs[i]._id	= bson.objectid()
+		end
+		docs[i]	= bson_encode(docs[i])
+	end
+	return self.database:runCommand("insert", self.name, "documents", docs)
+end
+
+function mongo_collection:update(selector, update, upsert, multi)
 	local flags	= (upsert and 1	or 0) +	(multi and 2 or	0)
 	local sock = self.connection.__sock
 	local pack = driver.update(self.full_name, flags, bson_encode(selector), bson_encode(update))
 	sock:request(pack)
 end
 
+function mongo_collection:safe_update(selector, update, upsert, multi)
+	upsert = upsert and true or false
+	multi = multi and true or false
+	return self.database:runCommand("update", self.name, "updates", {bson_encode({q = selector, u = update, upsert = upsert, multi = multi})})
+end
+
 function mongo_collection:delete(selector, single)
 	local sock = self.connection.__sock
 	local pack = driver.delete(self.full_name, single, bson_encode(selector))
 	sock:request(pack)
+end
+
+function mongo_collection:safe_delete(selector, single)
+	limit = single and 1 or 0
+	return self.database:runCommand("delete", "token", "deletes", {bson_encode({q = selector, limit = limit})})
 end
 
 function mongo_collection:findOne(query, selector)
