@@ -387,7 +387,7 @@ end
 
 function mongo_collection:safe_delete(selector, single)
 	limit = single and 1 or 0
-	return self.database:runCommand("delete", "token", "deletes", {bson_encode({q = selector, limit = limit})})
+	return self.database:runCommand("delete", self.name, "deletes", {bson_encode({q = selector, limit = limit})})
 end
 
 function mongo_collection:findOne(query, selector)
