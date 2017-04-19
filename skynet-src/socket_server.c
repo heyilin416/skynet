@@ -1,4 +1,5 @@
 #include "skynet.h"
+
 #include "socket_poll.h"
 #include "atomic.h"
 
@@ -428,7 +429,7 @@ open_socket(struct socket_server *ss, struct request_open * request, struct sock
 			continue;
 		}
 		socket_keepalive(sock);
-#ifdef _MSC_VER
+#ifdef _WINDOWS
 		status = connect(sock, ai_ptr->ai_addr, ai_ptr->ai_addrlen);
 		sp_nonblocking(sock);
 #else
