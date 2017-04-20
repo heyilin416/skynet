@@ -1432,6 +1432,11 @@ do_bind(const char *host, int port, int protocol, int *family) {
 	if (fd < 0) {
 		goto _failed_fd;
 	}
+#ifdef _WINDOWS
+	if (protocol == IPPROTO_TCP) {
+		reuse = 0;
+	}
+#endif
 	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&reuse, sizeof(int))==-1) {
 		goto _failed;
 	}
